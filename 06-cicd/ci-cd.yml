@@ -1,0 +1,80 @@
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+jobs:
+  call-train:
+    name: "Train Model"
+    uses: ./.github/workflows/train.yml
+
+  build-test-deploy:
+    name: "Build, Test, and Push"
+    needs: call-train
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: pip install pytest requests flake8
+
+      - name: Download trained model artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: 06-cicd/models/
+
+      - name: Verify downloaded artifacts
+        run: ls -lh 06-cicd/models/
+
+      - name: Lint
+        working-directory: 06-cicd
+        run: flake8 app.py train.py --max-line-length=100 --ignore=E501
+
+      - name: Build Docker image
+        working-directory: 06-cicd
+        run: docker build -t attrition-app .
+
+      - name: Start container and run tests
+        working-directory: 06-cicd
+        run: |
+          docker run -d -p 9696:9696 --name attrition-app attrition-app
+          sleep 15
+          curl -f http://localhost:9696/health || (docker logs attrition-app && exit 1)
+          pytest -q test_api.py
+          docker stop attrition-app && docker rm attrition-app
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image to GHCR
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}"
+          IMAGE=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')
+          VERSION=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          docker tag attrition-app "$IMAGE:$VERSION"
+          docker tag attrition-app "$IMAGE:latest"
+          docker push "$IMAGE:$VERSION"
+          docker push "$IMAGE:latest"
+
+          echo "✅ Pushed $IMAGE:$VERSION and $IMAGE:latest"

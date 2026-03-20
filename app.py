@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import joblib
 from pathlib import Path
-from typing import List
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field

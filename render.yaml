@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: hr-employee-attrition
+    runtime: image
+    image:
+      url: ghcr.io/aylinyasgul/hr-employee-attrition:latest
+    envVars:
+      - key: PORT
+        value: 9696
+    healthCheckPath: /health

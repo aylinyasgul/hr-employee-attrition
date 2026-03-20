@@ -1,5 +1,33 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Jupyter
 .ipynb_checkpoints/
+
+# macOS
 .DS_Store
+
+# MLflow
+mlruns/
+mlartifacts/
+backend.db
+
+# Model artifacts (generated locally, not committed)
+06-cicd/models/
+05-monitoring/data/predictions.csv
+05-monitoring/run_id.txt
+04-deployment/run_id.txt
+
+# Environment
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/

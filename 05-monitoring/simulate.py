@@ -15,7 +15,7 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-API_URL  = "http://localhost:9696/predict"
+API_URL = "http://localhost:9696/predict"
 DATA_DIR = "../data"
 
 # Categorical columns to send as-is (reverse of Stage 02 encoding)
@@ -29,8 +29,13 @@ def load_raw_data(n_rows: int = 200) -> pd.DataFrame:
     df = pd.read_csv(RAW_DATA_PATH, sep=";")
 
     # Drop columns not needed by the API
-    drop_cols = ["EmployeeCount", "StandardHours", "Over18",
-                 "EmployeeNumber", "Attrition"]
+    drop_cols = [
+        "EmployeeCount",
+        "StandardHours",
+        "Over18",
+        "EmployeeNumber",
+        "Attrition",
+    ]
     df = df.drop(columns=drop_cols)
     df = df.sample(n=n_rows, random_state=42).reset_index(drop=True)
     print(f"✓ Loaded {len(df)} rows")
@@ -40,43 +45,43 @@ def load_raw_data(n_rows: int = 200) -> pd.DataFrame:
 def build_payload(row: pd.Series) -> dict:
     """Convert a raw dataset row to API payload format."""
     return {
-        "Age"                    : int(row["Age"]),
-        "BusinessTravel"         : str(row["BusinessTravel"]),
-        "DailyRate"              : int(row["DailyRate"]),
-        "Department"             : str(row["Department"]),
-        "DistanceFromHome"       : int(row["DistanceFromHome"]),
-        "Education"              : int(row["Education"]),
-        "EducationField"         : str(row["EducationField"]),
+        "Age": int(row["Age"]),
+        "BusinessTravel": str(row["BusinessTravel"]),
+        "DailyRate": int(row["DailyRate"]),
+        "Department": str(row["Department"]),
+        "DistanceFromHome": int(row["DistanceFromHome"]),
+        "Education": int(row["Education"]),
+        "EducationField": str(row["EducationField"]),
         "EnvironmentSatisfaction": int(row["EnvironmentSatisfaction"]),
-        "Gender"                 : str(row["Gender"]),
-        "HourlyRate"             : int(row["HourlyRate"]),
-        "JobInvolvement"         : int(row["JobInvolvement"]),
-        "JobLevel"               : int(row["JobLevel"]),
-        "JobRole"                : str(row["JobRole"]),
-        "JobSatisfaction"        : int(row["JobSatisfaction"]),
-        "MaritalStatus"          : str(row["MaritalStatus"]),
-        "MonthlyIncome"          : int(row["MonthlyIncome"]),
-        "MonthlyRate"            : int(row["MonthlyRate"]),
-        "NumCompaniesWorked"     : int(row["NumCompaniesWorked"]),
-        "OverTime"               : str(row["OverTime"]),
-        "PercentSalaryHike"      : int(row["PercentSalaryHike"]),
-        "PerformanceRating"      : int(row["PerformanceRating"]),
+        "Gender": str(row["Gender"]),
+        "HourlyRate": int(row["HourlyRate"]),
+        "JobInvolvement": int(row["JobInvolvement"]),
+        "JobLevel": int(row["JobLevel"]),
+        "JobRole": str(row["JobRole"]),
+        "JobSatisfaction": int(row["JobSatisfaction"]),
+        "MaritalStatus": str(row["MaritalStatus"]),
+        "MonthlyIncome": int(row["MonthlyIncome"]),
+        "MonthlyRate": int(row["MonthlyRate"]),
+        "NumCompaniesWorked": int(row["NumCompaniesWorked"]),
+        "OverTime": str(row["OverTime"]),
+        "PercentSalaryHike": int(row["PercentSalaryHike"]),
+        "PerformanceRating": int(row["PerformanceRating"]),
         "RelationshipSatisfaction": int(row["RelationshipSatisfaction"]),
-        "StockOptionLevel"       : int(row["StockOptionLevel"]),
-        "TotalWorkingYears"      : int(row["TotalWorkingYears"]),
-        "TrainingTimesLastYear"  : int(row["TrainingTimesLastYear"]),
-        "WorkLifeBalance"        : int(row["WorkLifeBalance"]),
-        "YearsAtCompany"         : int(row["YearsAtCompany"]),
-        "YearsInCurrentRole"     : int(row["YearsInCurrentRole"]),
+        "StockOptionLevel": int(row["StockOptionLevel"]),
+        "TotalWorkingYears": int(row["TotalWorkingYears"]),
+        "TrainingTimesLastYear": int(row["TrainingTimesLastYear"]),
+        "WorkLifeBalance": int(row["WorkLifeBalance"]),
+        "YearsAtCompany": int(row["YearsAtCompany"]),
+        "YearsInCurrentRole": int(row["YearsInCurrentRole"]),
         "YearsSinceLastPromotion": int(row["YearsSinceLastPromotion"]),
-        "YearsWithCurrManager"   : int(row["YearsWithCurrManager"]),
+        "YearsWithCurrManager": int(row["YearsWithCurrManager"]),
     }
 
 
 def simulate_requests(df: pd.DataFrame, sleep_s: float = 0.05):
     """Send each row to the prediction API."""
     success = 0
-    failed  = 0
+    failed = 0
 
     for i, row in df.iterrows():
         payload = build_payload(row)
@@ -87,9 +92,11 @@ def simulate_requests(df: pd.DataFrame, sleep_s: float = 0.05):
             success += 1
 
             if (i + 1) % 50 == 0:
-                print(f"   Progress: {i + 1}/{len(df)}  "
-                      f"(last: prob={data['probability']:.3f}, "
-                      f"risk={data['risk_level']})")
+                print(
+                    f"   Progress: {i + 1}/{len(df)}  "
+                    f"(last: prob={data['probability']:.3f}, "
+                    f"risk={data['risk_level']})"
+                )
 
         except Exception as e:
             failed += 1

@@ -1,4 +1,5 @@
 """API tests for the Employee Attrition prediction service."""
+
 import requests
 
 BASE_URL = "http://localhost:9696"
@@ -81,9 +82,9 @@ def test_predict_high_risk():
     resp = requests.post(f"{BASE_URL}/predict", json=HIGH_RISK_EMPLOYEE)
     assert resp.status_code == 200, f"{resp.status_code} — {resp.text}"
     data = resp.json()
-    assert "attrition"   in data
+    assert "attrition" in data
     assert "probability" in data
-    assert "risk_level"  in data
+    assert "risk_level" in data
     assert 0 <= data["probability"] <= 1
     assert data["risk_level"] in ["Low", "Medium", "High"]
 

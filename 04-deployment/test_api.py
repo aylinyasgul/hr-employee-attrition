@@ -3,6 +3,7 @@
 Requires the server already running (python app.py showing Uvicorn on port 9696).
 Issues real HTTP requests — same pattern as the class deployment example.
 """
+
 import requests
 
 BASE_URL = "http://localhost:9696"
@@ -87,25 +88,33 @@ def test_health_endpoint():
 
 def test_predict_high_risk():
     resp = requests.post(f"{BASE_URL}/predict", json=HIGH_RISK_EMPLOYEE)
-    assert resp.status_code == 200, f"Unexpected status: {resp.status_code} — {resp.text}"
+    assert (
+        resp.status_code == 200
+    ), f"Unexpected status: {resp.status_code} — {resp.text}"
     data = resp.json()
-    assert "attrition"     in data
-    assert "probability"   in data
-    assert "risk_level"    in data
+    assert "attrition" in data
+    assert "probability" in data
+    assert "risk_level" in data
     assert "model_version" in data
     assert isinstance(data["probability"], float)
     assert 0 <= data["probability"] <= 1
     assert data["risk_level"] in ["Low", "Medium", "High"]
-    print(f"✓ /predict (high-risk) passed — probability: {data['probability']:.3f}, risk: {data['risk_level']}")
+    print(
+        f"✓ /predict (high-risk) passed — probability: {data['probability']:.3f}, risk: {data['risk_level']}"
+    )
 
 
 def test_predict_low_risk():
     resp = requests.post(f"{BASE_URL}/predict", json=LOW_RISK_EMPLOYEE)
-    assert resp.status_code == 200, f"Unexpected status: {resp.status_code} — {resp.text}"
+    assert (
+        resp.status_code == 200
+    ), f"Unexpected status: {resp.status_code} — {resp.text}"
     data = resp.json()
     assert isinstance(data["probability"], float)
     assert 0 <= data["probability"] <= 1
-    print(f"✓ /predict (low-risk)  passed — probability: {data['probability']:.3f}, risk: {data['risk_level']}")
+    print(
+        f"✓ /predict (low-risk)  passed — probability: {data['probability']:.3f}, risk: {data['risk_level']}"
+    )
 
 
 if __name__ == "__main__":

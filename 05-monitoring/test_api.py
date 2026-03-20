@@ -3,6 +3,7 @@
 Same tests as 04-deployment — confirms the monitoring version
 of the API behaves identically from the outside.
 """
+
 import requests
 
 BASE_URL = "http://localhost:9696"
@@ -87,12 +88,14 @@ def test_predict_high_risk():
     resp = requests.post(f"{BASE_URL}/predict", json=HIGH_RISK_EMPLOYEE)
     assert resp.status_code == 200, f"{resp.status_code} — {resp.text}"
     data = resp.json()
-    assert "attrition"   in data
+    assert "attrition" in data
     assert "probability" in data
-    assert "risk_level"  in data
+    assert "risk_level" in data
     assert 0 <= data["probability"] <= 1
     assert data["risk_level"] in ["Low", "Medium", "High"]
-    print(f"✓ /predict (high-risk) passed — prob: {data['probability']:.3f}, risk: {data['risk_level']}")
+    print(
+        f"✓ /predict (high-risk) passed — prob: {data['probability']:.3f}, risk: {data['risk_level']}"
+    )
 
 
 def test_predict_low_risk():
@@ -100,7 +103,9 @@ def test_predict_low_risk():
     assert resp.status_code == 200, f"{resp.status_code} — {resp.text}"
     data = resp.json()
     assert 0 <= data["probability"] <= 1
-    print(f"✓ /predict (low-risk)  passed — prob: {data['probability']:.3f}, risk: {data['risk_level']}")
+    print(
+        f"✓ /predict (low-risk)  passed — prob: {data['probability']:.3f}, risk: {data['risk_level']}"
+    )
 
 
 if __name__ == "__main__":

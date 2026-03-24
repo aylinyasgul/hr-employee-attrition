@@ -44,7 +44,7 @@ jobs:
 
       - name: Lint
         working-directory: 06-cicd
-        run: flake8 app.py train.py --max-line-length=100 --ignore=E501
+        run: flake8 app.py train.py
 
       - name: Build Docker image
         working-directory: 06-cicd

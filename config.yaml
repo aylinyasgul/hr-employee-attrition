@@ -1,0 +1,28 @@
+# ── Project Configuration ─────────────────────────────────────────────
+# Central configuration file for the HR Employee Attrition project.
+# Consolidates key settings used across training, serving, and monitoring.
+
+model:
+  algorithm: "xgboost"
+  n_estimators: 200
+  max_depth: 4
+  learning_rate: 0.05
+  scale_pos_weight: 5.20
+  random_state: 42
+
+data:
+  raw_path: "data/IBM_emp_attrition.csv"
+  train_path: "data/processed/train.csv"
+  test_path: "data/processed/test.csv"
+
+api:
+  port: 9696
+  model_version: "1.0.0"
+
+risk_thresholds:
+  low: 0.35
+  high: 0.60
+
+monitoring:
+  min_predictions_for_drift: 20
+  predictions_log: "05-monitoring/data/predictions.csv"

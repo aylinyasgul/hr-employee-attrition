@@ -31,3 +31,6 @@ backend.db
 # IDE
 .vscode/
 .idea/
+
+# Generated reports
+*.html

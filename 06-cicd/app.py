@@ -23,9 +23,11 @@ MODEL_DIR = Path(os.getenv("MODEL_DIR", "models"))
 THRESHOLD_HIGH = 0.60
 THRESHOLD_MEDIUM = 0.35
 
-# Load model and feature columns at module level
+# Load model, feature columns, and the fitted scaler at module level
 model = joblib.load(MODEL_DIR / "model.joblib")
 FEATURE_COLUMNS = joblib.load(MODEL_DIR / "feature_columns.joblib")
+SCALER = joblib.load(MODEL_DIR / "scaler.joblib")
+COLS_TO_SCALE = joblib.load(MODEL_DIR / "cols_to_scale.joblib")
 MODEL_VERSION = "1.0.0"
 
 print(f"[startup] Model loaded from {MODEL_DIR}/")
@@ -183,7 +185,12 @@ def preprocess(emp: EmployeeRequest) -> pd.DataFrame:
             d[f"{col}_{cat}"] = 1 if value == cat else 0
 
     row = {col: d.get(col, 0) for col in FEATURE_COLUMNS}
-    return pd.DataFrame([row])[FEATURE_COLUMNS]
+    frame = pd.DataFrame([row])[FEATURE_COLUMNS]
+
+    # Apply the same StandardScaler used in Stage 02 (the model was trained on
+    # scaled data, so raw inputs must be scaled before prediction).
+    frame[COLS_TO_SCALE] = SCALER.transform(frame[COLS_TO_SCALE])
+    return frame
 
 
 # ---------------------------------------------------------------------------

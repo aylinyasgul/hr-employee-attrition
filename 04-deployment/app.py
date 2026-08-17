@@ -7,6 +7,7 @@ and exposes a /predict endpoint that returns attrition probability and risk tier
 from __future__ import annotations
 
 import os
+import joblib
 import numpy as np
 import pandas as pd
 from contextlib import asynccontextmanager
@@ -21,8 +22,14 @@ from pydantic import BaseModel, Field
 # Configuration
 # ---------------------------------------------------------------------------
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5001")
+DATA_DIR = os.getenv("DATA_DIR", "../data/processed")
 RUN_ID: Optional[str] = None
 model = None
+
+# Fitted Stage-02 scaler — the model was trained on scaled data, so raw
+# requests must be scaled with the same transformer before prediction.
+SCALER = joblib.load(f"{DATA_DIR}/scaler.joblib")
+COLS_TO_SCALE = joblib.load(f"{DATA_DIR}/cols_to_scale.joblib")
 
 # Risk tier thresholds
 THRESHOLD_HIGH = 0.60  # probability >= 0.60 → High risk
@@ -188,11 +195,15 @@ def preprocess(emp: EmployeeRequest) -> pd.DataFrame:
             d[f"{col}_{cat}"] = 1 if value == cat else 0
 
     # Build DataFrame with columns in exact training order
-    with open(f"{os.getenv('DATA_DIR', '../data/processed')}/feature_columns.txt") as f:
+    with open(f"{DATA_DIR}/feature_columns.txt") as f:
         feature_cols = f.read().strip().split("\n")
 
     row = {col: d.get(col, 0) for col in feature_cols}
-    return pd.DataFrame([row])[feature_cols]
+    frame = pd.DataFrame([row])[feature_cols]
+
+    # Apply the same StandardScaler used in Stage 02
+    frame[COLS_TO_SCALE] = SCALER.transform(frame[COLS_TO_SCALE])
+    return frame
 
 
 # ---------------------------------------------------------------------------

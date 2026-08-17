@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import json
+import shutil
 import joblib
 import pandas as pd
 
@@ -81,6 +82,11 @@ def train_and_save(X_train, y_train, X_test, y_test):
     # Save artifacts
     joblib.dump(model, MODEL_DIR / "model.joblib")
     joblib.dump(list(X_train.columns), MODEL_DIR / "feature_columns.joblib")
+
+    # Copy the fitted scaler alongside the model so the API can apply the same
+    # Stage-02 scaling to raw requests (the training data is already scaled).
+    for artifact in ("scaler.joblib", "cols_to_scale.joblib"):
+        shutil.copy(f"{DATA_DIR}/{artifact}", MODEL_DIR / artifact)
 
     with open(MODEL_DIR / "metrics.json", "w") as f:
         json.dump(metrics, f, indent=2)

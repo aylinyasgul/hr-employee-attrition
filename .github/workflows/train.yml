@@ -23,8 +23,10 @@ jobs:
       - name: Copy processed data
         run: |
           mkdir -p 06-cicd/data/processed
-          cp data/processed/train.csv 06-cicd/data/processed/
-          cp data/processed/test.csv  06-cicd/data/processed/
+          cp data/processed/train.csv           06-cicd/data/processed/
+          cp data/processed/test.csv            06-cicd/data/processed/
+          cp data/processed/scaler.joblib       06-cicd/data/processed/
+          cp data/processed/cols_to_scale.joblib 06-cicd/data/processed/
 
       - name: Train model
         working-directory: 06-cicd

@@ -12,6 +12,7 @@ Voluntary employee attrition costs organizations between 50–200% of an employe
 The system outputs a risk score (Low / Medium / High) and probability for each employee, enabling HR teams to intervene before resignations occur.
 
 **Live API:** https://hr-employee-attrition.onrender.com/docs
+**Live App (Streamlit):** deploy `streamlit_app.py` on [Streamlit Community Cloud](https://share.streamlit.io) — see [Streamlit App](#streamlit-app) below.
 
 ---
 
@@ -76,6 +77,29 @@ pytest -q 06-cicd/test_api.py
 
 ---
 
+## Streamlit App
+
+An interactive web UI (`streamlit_app.py`) lets HR users score a single employee
+from a form and see the risk tier and probability. The app is **self-contained**:
+it trains the XGBoost model at startup from the committed processed data and
+reuses the committed `StandardScaler`, so no separate model artifact or API is
+required.
+
+### Run locally
+```bash
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+### Deploy on Streamlit Community Cloud
+1. Push this repo to GitHub (already done).
+2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
+3. **New app** → pick repo `aylinyasgul/hr-employee-attrition`, branch `main`,
+   main file `streamlit_app.py`.
+4. **Deploy.** Streamlit installs the root `requirements.txt` and launches the app.
+
+---
+
 ## CI/CD Pipeline
 
 Every push to `main` automatically:
@@ -104,6 +128,8 @@ Every push to `main` automatically:
 ├── data/
 │   └── processed/         # train.csv, test.csv, scaler
 ├── plots/                 # EDA visualizations
+├── streamlit_app.py       # Streamlit web UI (Streamlit Cloud entry point)
+├── requirements.txt       # Dependencies for the Streamlit app
 ├── render.yaml            # Render deployment manifest
 └── README.md
 ```

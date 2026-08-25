@@ -181,7 +181,7 @@ with st.sidebar:
 Enter an employee's details and press **Predict**.
         """
     )
-    st.markdown("[REST API on Render →](https://hr-employee-attrition.onrender.com/docs)")
+    st.markdown("[Source on GitHub →](https://github.com/aylinyasgul/hr-employee-attrition)")
 
 st.subheader("Employee details")
 

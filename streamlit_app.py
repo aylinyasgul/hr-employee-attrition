@@ -160,11 +160,77 @@ RISK_COLOR = {"Low": "#2e7d32", "Medium": "#f9a825", "High": "#c62828"}
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="Employee Attrition Predictor",
-    page_icon="🧑‍💼",
+    page_icon="◆",
     layout="wide",
 )
 
-st.title("🧑‍💼 Employee Attrition Predictor")
+# ---------------------------------------------------------------------------
+# Form state: defaults plus three worked examples
+#
+# The example profiles are not illustrative labels — each one was run through
+# this exact model and preprocessing pipeline, and the tier named in the button
+# is the tier the model actually returns for it.
+# ---------------------------------------------------------------------------
+DEFAULTS = {
+    "Age": 35, "BusinessTravel": "Travel_Rarely", "DailyRate": 800,
+    "Department": "Sales", "DistanceFromHome": 5, "Education": 3,
+    "EducationField": "Life Sciences", "EnvironmentSatisfaction": 3,
+    "Gender": "Male", "HourlyRate": 60, "JobInvolvement": 3, "JobLevel": 1,
+    "JobRole": "Sales Executive", "JobSatisfaction": 3,
+    "MaritalStatus": "Single", "MonthlyIncome": 5000, "MonthlyRate": 15000,
+    "NumCompaniesWorked": 2, "OverTime": "No", "PercentSalaryHike": 13,
+    "PerformanceRating": 3, "RelationshipSatisfaction": 3,
+    "StockOptionLevel": 0, "TotalWorkingYears": 10,
+    "TrainingTimesLastYear": 2, "WorkLifeBalance": 3, "YearsAtCompany": 5,
+    "YearsInCurrentRole": 3, "YearsSinceLastPromotion": 1,
+    "YearsWithCurrManager": 3,
+}
+FIELDS = list(DEFAULTS)
+
+PRESETS = {
+    "high": dict(
+        DEFAULTS, Age=24, BusinessTravel="Travel_Frequently", Department="Sales",
+        JobRole="Sales Representative", MaritalStatus="Single", OverTime="Yes",
+        MonthlyIncome=2200, DailyRate=400, HourlyRate=40, MonthlyRate=8000,
+        JobLevel=1, StockOptionLevel=0, TotalWorkingYears=2, YearsAtCompany=1,
+        YearsInCurrentRole=1, YearsSinceLastPromotion=0, YearsWithCurrManager=1,
+        JobSatisfaction=1, EnvironmentSatisfaction=1, RelationshipSatisfaction=2,
+        WorkLifeBalance=1, JobInvolvement=1, DistanceFromHome=22,
+        EducationField="Marketing", Education=2, NumCompaniesWorked=4,
+        TrainingTimesLastYear=0, PercentSalaryHike=11,
+    ),
+    "medium": dict(
+        DEFAULTS, Age=30, MonthlyIncome=3500, JobSatisfaction=2,
+        EnvironmentSatisfaction=2, WorkLifeBalance=2, TotalWorkingYears=6,
+        YearsAtCompany=4, YearsInCurrentRole=2, YearsSinceLastPromotion=2,
+        YearsWithCurrManager=2,
+    ),
+    "low": dict(
+        DEFAULTS, Age=45, BusinessTravel="Non-Travel",
+        Department="Research & Development", JobRole="Research Director",
+        MaritalStatus="Married", OverTime="No", MonthlyIncome=17000,
+        DailyRate=1300, HourlyRate=90, MonthlyRate=24000, JobLevel=5,
+        StockOptionLevel=2, TotalWorkingYears=22, YearsAtCompany=14,
+        YearsInCurrentRole=9, YearsSinceLastPromotion=1, YearsWithCurrManager=9,
+        JobSatisfaction=4, EnvironmentSatisfaction=4, RelationshipSatisfaction=4,
+        WorkLifeBalance=3, JobInvolvement=4, DistanceFromHome=3,
+        EducationField="Life Sciences", Education=4, NumCompaniesWorked=1,
+        TrainingTimesLastYear=3, PercentSalaryHike=15,
+    ),
+}
+
+for _field, _value in DEFAULTS.items():
+    st.session_state.setdefault(f"f_{_field}", _value)
+
+
+def apply_preset(name: str) -> None:
+    """Load an example profile into the form and score it immediately."""
+    for field, value in PRESETS[name].items():
+        st.session_state[f"f_{field}"] = value
+    st.session_state["autorun"] = True
+
+
+st.title("Employee Attrition Predictor")
 st.caption(
     "IE University · MBD 2025 · Group 6 — predicts an employee's voluntary "
     "attrition risk with an XGBoost model trained on the IBM HR Analytics dataset."
@@ -178,10 +244,31 @@ with st.sidebar:
 - **Risk tiers:** Low `< {THRESHOLD_LOW:g}` · Medium `{THRESHOLD_LOW:g}–{THRESHOLD_HIGH:g}` · High `≥ {THRESHOLD_HIGH:g}`
 - **Engineered features:** PromotionStagnationRatio, WorkloadPayPressure, AverageSatisfaction, TenureBucket
 
-Enter an employee's details and press **Predict**.
+Load an example profile to see a result straight away, or enter an employee's
+details and press **Predict**.
         """
     )
+    st.markdown(
+        "The model is deliberately reported with its real performance: test "
+        "recall is 0.36, so it misses most actual leavers. Treat it as a "
+        "cohort-level prioritisation signal, not a decision about a person."
+    )
     st.markdown("[Source on GitHub →](https://github.com/aylinyasgul/hr-employee-attrition)")
+
+st.subheader("Try an example")
+st.caption("Each profile below is scored by the live model — the tier shown is the tier it returns.")
+e1, e2, e3 = st.columns(3)
+e1.button("High-risk profile", use_container_width=True,
+          on_click=apply_preset, args=("high",),
+          help="Young sales rep, overtime, low pay, first year, low satisfaction")
+e2.button("Medium-risk profile", use_container_width=True,
+          on_click=apply_preset, args=("medium",),
+          help="Mid-tenure employee with below-average pay and satisfaction")
+e3.button("Low-risk profile", use_container_width=True,
+          on_click=apply_preset, args=("low",),
+          help="Senior R&D director, long tenure, high pay and satisfaction")
+
+autorun = st.session_state.pop("autorun", False)
 
 st.subheader("Employee details")
 
@@ -190,82 +277,51 @@ with st.form("employee_form"):
 
     with c1:
         st.markdown("**Demographics & role**")
-        Age = st.slider("Age", 18, 65, 35)
-        Gender = st.selectbox("Gender", ["Male", "Female"])
-        MaritalStatus = st.selectbox("Marital status", ["Single", "Married", "Divorced"])
-        Department = st.selectbox(
-            "Department", ["Sales", "Research & Development", "Human Resources"]
-        )
-        JobRole = st.selectbox("Job role", OHE_MAPS["JobRole"])
-        JobLevel = st.slider("Job level", 1, 5, 1)
-        Education = st.slider("Education (1–5)", 1, 5, 3)
-        EducationField = st.selectbox("Education field", OHE_MAPS["EducationField"])
-        DistanceFromHome = st.slider("Distance from home (km)", 0, 30, 5)
+        st.slider("Age", 18, 65, key="f_Age")
+        st.selectbox("Gender", ["Male", "Female"], key="f_Gender")
+        st.selectbox("Marital status", ["Single", "Married", "Divorced"], key="f_MaritalStatus")
+        st.selectbox("Department",
+                     ["Sales", "Research & Development", "Human Resources"],
+                     key="f_Department")
+        st.selectbox("Job role", OHE_MAPS["JobRole"], key="f_JobRole")
+        st.slider("Job level", 1, 5, key="f_JobLevel")
+        st.slider("Education (1–5)", 1, 5, key="f_Education")
+        st.selectbox("Education field", OHE_MAPS["EducationField"], key="f_EducationField")
+        st.slider("Distance from home (km)", 0, 30, key="f_DistanceFromHome")
 
     with c2:
         st.markdown("**Work & compensation**")
-        BusinessTravel = st.selectbox(
-            "Business travel", ["Travel_Rarely", "Travel_Frequently", "Non-Travel"]
-        )
-        OverTime = st.selectbox("Over time", ["No", "Yes"])
-        MonthlyIncome = st.number_input("Monthly income", 1000, 25000, 5000, step=100)
-        DailyRate = st.number_input("Daily rate", 0, 1500, 800, step=10)
-        HourlyRate = st.number_input("Hourly rate", 0, 120, 60, step=1)
-        MonthlyRate = st.number_input("Monthly rate", 0, 30000, 15000, step=100)
-        PercentSalaryHike = st.slider("Percent salary hike", 0, 30, 13)
-        StockOptionLevel = st.slider("Stock option level", 0, 3, 0)
-        NumCompaniesWorked = st.slider("Num companies worked", 0, 10, 2)
+        st.selectbox("Business travel",
+                     ["Travel_Rarely", "Travel_Frequently", "Non-Travel"],
+                     key="f_BusinessTravel")
+        st.selectbox("Over time", ["No", "Yes"], key="f_OverTime")
+        st.number_input("Monthly income", 1000, 25000, step=100, key="f_MonthlyIncome")
+        st.number_input("Daily rate", 0, 1500, step=10, key="f_DailyRate")
+        st.number_input("Hourly rate", 0, 120, step=1, key="f_HourlyRate")
+        st.number_input("Monthly rate", 0, 30000, step=100, key="f_MonthlyRate")
+        st.slider("Percent salary hike", 0, 30, key="f_PercentSalaryHike")
+        st.slider("Stock option level", 0, 3, key="f_StockOptionLevel")
+        st.slider("Num companies worked", 0, 10, key="f_NumCompaniesWorked")
 
     with c3:
         st.markdown("**Tenure & satisfaction**")
-        TotalWorkingYears = st.slider("Total working years", 0, 40, 10)
-        YearsAtCompany = st.slider("Years at company", 0, 40, 5)
-        YearsInCurrentRole = st.slider("Years in current role", 0, 20, 3)
-        YearsSinceLastPromotion = st.slider("Years since last promotion", 0, 15, 1)
-        YearsWithCurrManager = st.slider("Years with current manager", 0, 20, 3)
-        TrainingTimesLastYear = st.slider("Trainings last year", 0, 6, 2)
-        JobSatisfaction = st.slider("Job satisfaction (1–4)", 1, 4, 3)
-        EnvironmentSatisfaction = st.slider("Environment satisfaction (1–4)", 1, 4, 3)
-        RelationshipSatisfaction = st.slider("Relationship satisfaction (1–4)", 1, 4, 3)
-        JobInvolvement = st.slider("Job involvement (1–4)", 1, 4, 3)
-        PerformanceRating = st.slider("Performance rating (1–4)", 1, 4, 3)
-        WorkLifeBalance = st.slider("Work-life balance (1–4)", 1, 4, 3)
+        st.slider("Total working years", 0, 40, key="f_TotalWorkingYears")
+        st.slider("Years at company", 0, 40, key="f_YearsAtCompany")
+        st.slider("Years in current role", 0, 20, key="f_YearsInCurrentRole")
+        st.slider("Years since last promotion", 0, 15, key="f_YearsSinceLastPromotion")
+        st.slider("Years with current manager", 0, 20, key="f_YearsWithCurrManager")
+        st.slider("Trainings last year", 0, 6, key="f_TrainingTimesLastYear")
+        st.slider("Job satisfaction (1–4)", 1, 4, key="f_JobSatisfaction")
+        st.slider("Environment satisfaction (1–4)", 1, 4, key="f_EnvironmentSatisfaction")
+        st.slider("Relationship satisfaction (1–4)", 1, 4, key="f_RelationshipSatisfaction")
+        st.slider("Job involvement (1–4)", 1, 4, key="f_JobInvolvement")
+        st.slider("Performance rating (1–4)", 1, 4, key="f_PerformanceRating")
+        st.slider("Work-life balance (1–4)", 1, 4, key="f_WorkLifeBalance")
 
-    submitted = st.form_submit_button("🔮 Predict attrition risk", use_container_width=True)
+    submitted = st.form_submit_button("Predict attrition risk", use_container_width=True)
 
-if submitted:
-    record = {
-        "Age": Age,
-        "BusinessTravel": BusinessTravel,
-        "DailyRate": DailyRate,
-        "Department": Department,
-        "DistanceFromHome": DistanceFromHome,
-        "Education": Education,
-        "EducationField": EducationField,
-        "EnvironmentSatisfaction": EnvironmentSatisfaction,
-        "Gender": Gender,
-        "HourlyRate": HourlyRate,
-        "JobInvolvement": JobInvolvement,
-        "JobLevel": JobLevel,
-        "JobRole": JobRole,
-        "JobSatisfaction": JobSatisfaction,
-        "MaritalStatus": MaritalStatus,
-        "MonthlyIncome": MonthlyIncome,
-        "MonthlyRate": MonthlyRate,
-        "NumCompaniesWorked": NumCompaniesWorked,
-        "OverTime": OverTime,
-        "PercentSalaryHike": PercentSalaryHike,
-        "PerformanceRating": PerformanceRating,
-        "RelationshipSatisfaction": RelationshipSatisfaction,
-        "StockOptionLevel": StockOptionLevel,
-        "TotalWorkingYears": TotalWorkingYears,
-        "TrainingTimesLastYear": TrainingTimesLastYear,
-        "WorkLifeBalance": WorkLifeBalance,
-        "YearsAtCompany": YearsAtCompany,
-        "YearsInCurrentRole": YearsInCurrentRole,
-        "YearsSinceLastPromotion": YearsSinceLastPromotion,
-        "YearsWithCurrManager": YearsWithCurrManager,
-    }
+if submitted or autorun:
+    record = {field: st.session_state[f"f_{field}"] for field in FIELDS}
 
     features = preprocess(record)
     probability = float(MODEL.predict_proba(features)[0, 1])

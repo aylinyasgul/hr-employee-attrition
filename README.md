@@ -245,7 +245,7 @@ jurisdictions.
 
 ---
 
-## My Contribution
+## Team
 
-This was a five-person group project. My work concentrated on the exploratory analysis and
-fairness audit (Stage 01), the feature engineering (Stage 02), and this documentation.
+This was a five-person group project for the MLOps course (Group 6): Francisco Concha,
+Aylin Yasgul, Martin Schneider, Bader Al Eisa and Quifeng Cai.

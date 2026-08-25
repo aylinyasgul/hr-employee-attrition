@@ -11,10 +11,14 @@ Voluntary employee attrition costs organizations between 50–200% of an employe
 
 The system outputs a risk score (Low / Medium / High) and probability for each employee, enabling HR teams to intervene before resignations occur.
 
-The repository runs end to end locally — see [Quick Start](#quick-start). The service was
-previously deployed to Render on a free instance, which is no longer running; the deployment
-configuration (`render.yaml`, `06-cicd/Dockerfile`, GitHub Actions workflows) is kept in the
-repo so the pipeline can be redeployed.
+**▶ Live demo:** [Employee Attrition Predictor](https://hr-employee-attrition-sknzxufewncsd8hvprxemb.streamlit.app/) — enter an employee's details and get a
+risk tier and probability. Hosted on Streamlit Community Cloud, so it sleeps when idle; if you
+see a "Zzzz" screen, click **Yes, get this app back up!** and give it a minute to wake.
+
+The FastAPI service was previously deployed to Render on a free instance that is no longer
+running. The deployment configuration (`render.yaml`, `06-cicd/Dockerfile`, GitHub Actions
+workflows) is kept in the repo, and CI still builds and pushes a current image to GHCR on every
+push to `main`, so the API can be redeployed without code changes.
 
 ---
 
@@ -123,7 +127,8 @@ pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
 
-The app is not currently hosted; run it locally with the command above.
+The app is hosted on Streamlit Community Cloud at
+[https://hr-employee-attrition-sknzxufewncsd8hvprxemb.streamlit.app/](https://hr-employee-attrition-sknzxufewncsd8hvprxemb.streamlit.app/). It sleeps after a period of inactivity and wakes on the first visit.
 
 ---
 

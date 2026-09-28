@@ -33,8 +33,6 @@ and `app.py` loads it directly. No MLflow server needed inside Docker.
 ├── test_api.py           # 3 API tests
 ├── requirements.txt      # Pinned dependencies
 ├── Dockerfile            # Builds self-contained image
-├── train.yml             # Reusable training workflow
-├── ci-cd.yml             # Main CI/CD orchestrator
 └── README.md
 ```
 
@@ -56,16 +54,7 @@ git push -u origin main
 
 ### 2. Add GitHub Actions Workflows
 
-Copy the workflow files to the correct location:
-
-```bash
-mkdir -p .github/workflows
-cp 06-cicd/train.yml  .github/workflows/train.yml
-cp 06-cicd/ci-cd.yml  .github/workflows/ci-cd.yml
-git add .github/
-git commit -m "Add CI/CD workflows"
-git push
-```
+The workflows live in `.github/workflows/`: `ci-cd.yml` (main pipeline) and `train.yml` (reusable training job).
 
 ### 3. Add Processed Data to Repo
 

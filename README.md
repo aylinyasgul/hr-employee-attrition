@@ -7,11 +7,11 @@ Francisco Concha · Aylin Yasgul · Martin Schneider · Bader Al Eisa · Quifeng
 
 ## Overview
 
-Voluntary employee attrition costs organizations between 50–200% of an employee's annual salary. This project builds an end-to-end MLOps pipeline that predicts each employee's attrition risk using the IBM HR Analytics dataset (1,470 employees, 16.1% attrition rate).
+This project builds an end-to-end MLOps pipeline that predicts each employee's attrition risk using the IBM HR Analytics dataset (1,470 employees, 16.1% attrition rate).
 
 The system outputs a risk score (Low / Medium / High) and probability for each employee, enabling HR teams to intervene before resignations occur.
 
-**▶ Live demo:** [Employee Attrition Predictor](https://hr-employee-attrition-sknzxufewncsd8hvprxemb.streamlit.app/) — enter an employee's details and get a
+**Live demo:** [Employee Attrition Predictor](https://hr-employee-attrition-sknzxufewncsd8hvprxemb.streamlit.app/) — enter an employee's details and get a
 risk tier and probability. Hosted on Streamlit Community Cloud, so it sleeps when idle; if you
 see a "Zzzz" screen, click **Yes, get this app back up!** and give it a minute to wake.
 
@@ -72,10 +72,10 @@ Held-out test set (294 employees, 47 leavers):
 | SVM (RBF) — Stage 03 selection | 0.505 | 0.796 | 0.450 | 0.574 |
 | XGBoost — deployed in Stages 04–06 | 0.391 | 0.757 | 0.425 | 0.362 |
 
-**Honest read on this.** XGBoost was carried into deployment for engineering reasons — fast
+**Why XGBoost was deployed:** XGBoost was carried into deployment for engineering reasons — fast
 retraining in CI, native probability outputs, and a simple serialisation path — but on the
 held-out test set it is the weaker model. Recall of 0.36 means the deployed service misses
-roughly two thirds of employees who actually leave, which is the wrong error to make for a
+roughly two thirds of employees who leave, which is the wrong error to make for a
 retention use case. Neither model reaches the project's own targets (F1 ≥ 0.75, ROC-AUC ≥ 0.80).
 This is a genuine limitation of the work, not a presentation choice — see
 [Limitations](#limitations).
